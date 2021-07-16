@@ -201,6 +201,8 @@ class _MyHomePageState extends State<MyHomePage> {
     if (kIsWeb) {
       await selectCSVFile();
 
+      print("FInal csv length is ${finalCsvContent.length}");
+
       Navigator.push(
         context,
         MaterialPageRoute(

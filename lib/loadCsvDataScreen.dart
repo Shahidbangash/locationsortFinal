@@ -118,7 +118,7 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
                             progress = true;
                           });
 
-                          for (var i = 2; i < cityNames.length; i++) {
+                          for (var i = 2; i < csvContent.length; i++) {
                             // for (var i = 2; i < 6; i++) {
                             // print("I is ${i}");
                             // print("total cities are ${cityNames.length}");
@@ -272,10 +272,10 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
                         // ignore: avoid_print
                         // print(snapshot.data.toString());
                         if (snapshot.hasData) {
-                          if (kIsWeb) {
-                          } else {
-                            cityNames = [];
-                          }
+                          cityNames = [];
+                        }
+                        if (kIsWeb) {
+                          print("Csv file ${csvFiles.length} is");
                         }
                         return snapshot.hasData
                             ? Padding(
@@ -354,7 +354,7 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
                     color: const Color(0xFF1d3557),
                     borderRadius: const BorderRadius.all(Radius.circular(44))),
                 child: Text(
-                  "${current} of ${cityNames.length} requests done",
+                  "${current} of ${csvContent.length} requests done",
                   style: TextStyle(color: Colors.white),
                 ),
               )
