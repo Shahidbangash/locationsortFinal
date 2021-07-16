@@ -32,40 +32,27 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
 
   final String path;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      print("WidgetsBinding");
+      if (kIsWeb) {
+        cityNames = [];
+        for (var i = 1; i < csvContent.length; i++) {
+          cityNames.add(csvContent[i][4].toString().trim() +
+              " " +
+              csvContent[i][5].toString().trim());
+          // print("CityName is $cityNames");
+        }
+      }
+    });
+  }
+
   List<dynamic> csvContent;
 
   _LoadCsvDataScreenState({this.path, this.csvContent});
 
-  sortList() async {}
-
-  // Future<dynamic> getLattitude(String address) async {
-  //   if (kIsWeb) {
-  //     final httpClient = HttpClient();
-  //     final request = await httpClient.getUrl(Uri.parse('http://google.com'));
-  //     final response = await request.close();
-  //     print(response.toString());
-  //   } else {
-  //     final response = await http.get(
-  //         Uri.parse(
-  //             "https://maps.googleapis.com/maps/api/geocode/json?address=${address},+CA&key=AIzaSyC92UARV7HJsL0iq2jMsue7JMQJeg2LBcE"),
-  //         headers: headers);
-  //     print("Response is ${response}");
-
-  //     if (response.statusCode == 200) {
-  //       // If the server did return a 200 OK response,
-  //       // then parse the JSON.
-  //       // print(jsonDecode(response.body));
-
-  //       var responseBody = jsonDecode(response.body);
-
-  //       print("Response body is ");
-  //       print(responseBody["results"][0]["geometry"]["location"]);
-
-  //       var latlong = responseBody["results"][0]["geometry"]["location"];
-  //       return [latlong["lat"], latlong["lng"]];
-  //     }
-  //   }
-  // }
   int current = 0;
   bool progress = false;
   List<List> csvFiles = [];
@@ -174,44 +161,6 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
                   ],
                 ),
               ),
-              // Padding(
-              //   padding: const EdgeInsets.all(8.0),
-              //   child: Row(
-              //     crossAxisAlignment: CrossAxisAlignment.center,
-              //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //     children: [
-              //       const SizedBox(
-              //         width: 44,
-              //         child: Center(
-              //           child: Text(
-              //             "Page",
-              //             style: TextStyle(
-              //               fontSize: 16,
-              //             ),
-              //           ),
-              //         ),
-              //       ),
-              //       const SizedBox(
-              //         width: 120,
-              //         child: Text(
-              //           "Adress",
-              //           style: TextStyle(
-              //             fontSize: 16,
-              //           ),
-              //         ),
-              //       ),
-              //       const SizedBox(
-              //         width: 60,
-              //         child: Text(
-              //           "City",
-              //           style: TextStyle(
-              //             fontSize: 16,
-              //           ),
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
               kIsWeb
                   ? SizedBox(
                       height: MediaQuery.of(context).size.height,
@@ -219,9 +168,7 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
                           scrollDirection: Axis.vertical,
                           itemCount: csvContent.length,
                           itemBuilder: (context, i) {
-                            cityNames.add(csvContent[i][4].toString().trim() +
-                                " " +
-                                csvContent[i][5].toString().trim());
+                            print("Total length is ${csvContent.length}");
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 5),
                               child: Card(
@@ -233,11 +180,6 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
                                     left: 5,
                                     right: 5,
                                   ),
-                                  decoration: const BoxDecoration(
-                                      // border: Border.all(
-                                      //   width: 1,
-                                      // ),
-                                      ),
                                   child: Row(
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
@@ -274,9 +216,7 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
                         if (snapshot.hasData) {
                           cityNames = [];
                         }
-                        if (kIsWeb) {
-                          print("Csv file ${csvFiles.length} is");
-                        }
+
                         return snapshot.hasData
                             ? Padding(
                                 padding: const EdgeInsets.all(8.0),
