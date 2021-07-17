@@ -63,25 +63,20 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
     var url = "https://getlocationgoogle.herokuapp.com/fetchLocation";
 
     print("Calling url is $url");
-    try {
-      final response = await http.post(
-        Uri.parse(url),
-        body: {"source": source, "destination": destinaiton},
-      );
-      print("response code is ${response.headers}");
 
-      var responseData = response.body;
+    await http.post(
+      Uri.parse(url),
+      body: {"source": source, "destination": destinaiton},
+    ).then((response) {
+      print("response is ${response.body}");
+      resultFromGoogle.add(jsonDecode(response.body));
+    }).catchError((onError) {
+      print("Error while fetching reconds $onError");
+    });
 
-      print("response datra is ${response.body}");
+    // var responseData = response.body;
 
-      resultFromGoogle.add(jsonDecode(responseData));
-
-      return responseData;
-
-      // return jsonDecode(response.body);
-    } catch (error) {
-      print("Error $error");
-    }
+    // print("response datra is ${response.body}");
   }
 
   @override
@@ -98,25 +93,39 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
                     : InkWell(
                         child: Text("Get Distance"),
                         onTap: () async {
-                          setState(() {});
-                          print(cityNames.isEmpty);
                           setState(() {
                             resultFromGoogle = [];
                             progress = true;
                           });
 
-                          for (var i = 2; i < csvContent.length; i++) {
-                            // for (var i = 2; i < 6; i++) {
-                            // print("I is ${i}");
-                            // print("total cities are ${cityNames.length}");
-                            // print("City Name is ${cityNames[i]}");
-                            // print("Current is $current");
+                          if (kIsWeb) {
+                            for (var i = 2; i < csvContent.length - 1; i++) {
+                              // for (var i = 2; i < 6; i++) {
+                              // print("I is ${i}");
+                              // print("total cities are ${cityNames.length}");
+                              // print("City Name is ${cityNames[i]}");
+                              // print("Current is $current");
 
-                            setState(() {
-                              current = i;
-                            });
+                              setState(() {
+                                current = i;
+                              });
 
-                            await fetchLocation(cityNames[1], cityNames[i]);
+                              await fetchLocation(cityNames[1], cityNames[i]);
+                            }
+                          } else {
+                            for (var i = 2; i < cityNames.length; i++) {
+                              // for (var i = 2; i < 6; i++) {
+                              // print("I is ${i}");
+                              // print("total cities are ${cityNames.length}");
+                              // print("City Name is ${cityNames[i]}");
+                              // print("Current is $current");
+
+                              setState(() {
+                                current = i;
+                              });
+
+                              await fetchLocation(cityNames[1], cityNames[i]);
+                            }
                           }
 
                           print("result from google $resultFromGoogle");
@@ -168,7 +177,6 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
                           scrollDirection: Axis.vertical,
                           itemCount: csvContent.length,
                           itemBuilder: (context, i) {
-                            print("Total length is ${csvContent.length}");
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 5),
                               child: Card(
@@ -294,7 +302,9 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
                     color: const Color(0xFF1d3557),
                     borderRadius: const BorderRadius.all(Radius.circular(44))),
                 child: Text(
-                  "${current} of ${csvContent.length} requests done",
+                  kIsWeb
+                      ? "${current} of ${csvContent.length} requests done"
+                      : "${current} of ${cityNames.length} requests done",
                   style: TextStyle(color: Colors.white),
                 ),
               )

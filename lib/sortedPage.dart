@@ -1,3 +1,4 @@
+// import 'dart:html' as html;
 import 'dart:io';
 import 'dart:ui';
 
@@ -12,6 +13,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:locationsort/allMarkers.dart';
 import 'package:locationsort/const.dart';
+import 'package:locationsort/firebaseWebUploadImage.dart';
 import 'package:locationsort/googleMap.dart';
 import 'package:locationsort/routeScreen.dart';
 import 'package:maps_launcher/maps_launcher.dart';
@@ -33,6 +35,59 @@ class _SortedListPageState extends State<SortedListPage> {
   List sortedList;
   BitmapDescriptor pinLocationIcon;
   bool imageUploading = false;
+
+  void uploadImage(imageLink, int index) {
+    FirebaseStorage.instance.ref(imageLink).getDownloadURL().then(
+      (imageUrl) {
+        FirebaseFirestore.instance
+            .collection("placeImages/")
+            .get()
+            .then((querySnapshot) {
+          List data = querySnapshot.docs
+              .toList()
+              .where((element) =>
+                  (element.id.contains(sortedList[index]['destination'])))
+              .toList();
+
+          if (data.length >= 1) {
+            var imageList = getImageList(data[0]["images"].toString());
+            imageList.add(imageUrl);
+            FirebaseFirestore.instance
+                .collection("placeImages/")
+                .doc(sortedList[index]["destination"])
+                .update({"images": imageList}).then((value) {
+              customShowAlertDialog(context,
+                  messsage: "Image uploaded Successfully");
+            }).catchError((onError) {
+              customShowAlertDialog(context, messsage: "Error $onError");
+            });
+          } else {
+            FirebaseFirestore.instance
+                .collection("placeImages/")
+                .doc(sortedList[index]["destination"])
+                .set({
+              "images": [imageUrl],
+              "placeName": sortedList[index]["destination"],
+            }).then((value) {
+              customShowAlertDialog(context,
+                  messsage: "Image uploaded Successfully");
+            }).catchError((onError) {
+              customShowAlertDialog(context,
+                  messsage: "Error in uploading $onError");
+            });
+            setState(() {
+              imageUploading = false;
+            });
+          }
+          // print("We Found element ${value.docs.contains(element)}")
+          return null;
+        }).catchError((onError) {
+          print(onError);
+        });
+        // });
+      },
+    );
+  }
 
   @override
   void initState() {
@@ -393,113 +448,144 @@ class _SortedListPageState extends State<SortedListPage> {
                                   ? CircularProgressIndicator()
                                   : InkWell(
                                       onTap: () async {
-                                        final pickedFile = await ImagePicker
-                                            .platform
-                                            .pickImage(
-                                                source: ImageSource.gallery);
-
-                                        if (pickedFile != null) {
+                                        if (kIsWeb) {
                                           setState(() {
                                             imageUploading = true;
                                           });
-                                          // FirebaseFirestore.instance.
-                                          var image = pickedFile.path;
-                                          var testvar = image.toString();
-                                          var imageName =
-                                              testvar.split("/").last;
-                                          var imageExtension =
-                                              imageName.substring(
-                                                  0, imageName.length - 1);
-                                          var imageLink =
-                                              "placeImages/${sortedList[index]['destination']}/$imageExtension";
-
-                                          var tempFile = File(pickedFile.path);
-                                          var putFile = FirebaseStorage.instance
-                                              .ref(imageLink)
-                                              .putFile(tempFile);
-
-                                          putFile.whenComplete(() {
-                                            FirebaseStorage.instance
-                                                .ref(imageLink)
-                                                .getDownloadURL()
-                                                .then((imageUrl) {
-                                              FirebaseFirestore.instance
-                                                  .collection("placeImages/")
-                                                  .get()
-                                                  .then((querySnapshot) {
-                                                List data = querySnapshot.docs
-                                                    .toList()
-                                                    .where((element) => (element
-                                                        .id
-                                                        .contains(sortedList[
-                                                                index]
-                                                            ['destination'])))
-                                                    .toList();
-
-                                                if (data.length >= 1) {
-                                                  var imageList = getImageList(
-                                                      data[0]["images"]
-                                                          .toString());
-                                                  imageList.add(imageUrl);
-                                                  FirebaseFirestore.instance
-                                                      .collection(
-                                                          "placeImages/")
-                                                      .doc(sortedList[index]
-                                                          ["destination"])
-                                                      .update({
-                                                    "images": imageList
-                                                  }).then((value) {
-                                                    customShowAlertDialog(
-                                                        context,
-                                                        messsage:
-                                                            "Image uploaded Successfully");
-                                                  }).catchError((onError) {
-                                                    customShowAlertDialog(
-                                                        context,
-                                                        messsage:
-                                                            "Error $onError");
-                                                  });
-                                                } else {
-                                                  FirebaseFirestore.instance
-                                                      .collection(
-                                                          "placeImages/")
-                                                      .doc(sortedList[index]
-                                                          ["destination"])
-                                                      .set({
-                                                    "images": [imageUrl],
-                                                    "placeName":
-                                                        sortedList[index]
-                                                            ["destination"],
-                                                  }).then((value) {
-                                                    customShowAlertDialog(
-                                                        context,
-                                                        messsage:
-                                                            "Image uploaded Successfully");
-                                                  }).catchError((onError) {
-                                                    customShowAlertDialog(
-                                                        context,
-                                                        messsage:
-                                                            "Error in uploading $onError");
-                                                  });
-                                                  setState(() {
-                                                    imageUploading = false;
-                                                  });
-                                                }
-                                                // print("We Found element ${value.docs.contains(element)}")
-                                                return null;
-                                              }).catchError((onError) {
-                                                print(onError);
-                                              });
-                                              // });
-                                            });
+                                          startFilePicker(
+                                            context,
+                                            obj: sortedList[index],
+                                          ).then((value) {
                                             setState(() {
                                               imageUploading = false;
                                             });
-                                          }).catchError((onError) {
-                                            print(onError);
                                           });
+                                        } else {
+                                          final pickedFile = await ImagePicker
+                                              .platform
+                                              .pickImage(
+                                                  source: ImageSource.gallery);
+
+                                          if (pickedFile != null) {
+                                            setState(() {
+                                              imageUploading = true;
+                                            });
+                                            // FirebaseFirestore.instance.
+                                            var image = pickedFile.path;
+                                            var testvar = image.toString();
+                                            var imageName =
+                                                testvar.split("/").last;
+                                            var imageExtension =
+                                                imageName.substring(
+                                                    0, imageName.length - 1);
+                                            var imageLink =
+                                                "placeImages/${sortedList[index]['destination']}/$imageExtension";
+
+                                            var tempFile =
+                                                File(pickedFile.path);
+                                            var putFile = FirebaseStorage
+                                                .instance
+                                                .ref(imageLink)
+                                                .putFile(tempFile);
+
+                                            putFile.whenComplete(() {
+                                              putFile.whenComplete(() {
+                                                FirebaseStorage.instance
+                                                    .ref(imageLink)
+                                                    .getDownloadURL()
+                                                    .then((imageUrl) {
+                                                  FirebaseFirestore.instance
+                                                      .collection(
+                                                          "placeImages/")
+                                                      .get()
+                                                      .then((querySnapshot) {
+                                                    List data = querySnapshot
+                                                        .docs
+                                                        .toList()
+                                                        .where((element) => (element
+                                                            .id
+                                                            .contains(sortedList[
+                                                                    index][
+                                                                'destination'])))
+                                                        .toList();
+
+                                                    if (data.length >= 1) {
+                                                      var imageList =
+                                                          getImageList(data[0]
+                                                                  ["images"]
+                                                              .toString());
+                                                      imageList.add(imageUrl);
+                                                      FirebaseFirestore.instance
+                                                          .collection(
+                                                              "placeImages/")
+                                                          .doc(sortedList[index]
+                                                              ["destination"])
+                                                          .update({
+                                                        "images": imageList
+                                                      }).then((value) {
+                                                        customShowAlertDialog(
+                                                            context,
+                                                            messsage:
+                                                                "Image uploaded Successfully");
+                                                        setState(() {
+                                                          imageUploading =
+                                                              false;
+                                                        });
+                                                      }).catchError((onError) {
+                                                        setState(() {
+                                                          imageUploading =
+                                                              false;
+                                                        });
+                                                        customShowAlertDialog(
+                                                            context,
+                                                            messsage:
+                                                                "Error $onError");
+                                                      });
+                                                    } else {
+                                                      FirebaseFirestore.instance
+                                                          .collection(
+                                                              "placeImages/")
+                                                          .doc(sortedList[index]
+                                                              ["destination"])
+                                                          .set({
+                                                        "images": [imageUrl],
+                                                        "placeName":
+                                                            sortedList[index]
+                                                                ["destination"],
+                                                      }).then((value) {
+                                                        customShowAlertDialog(
+                                                            context,
+                                                            messsage:
+                                                                "Image uploaded Successfully");
+                                                        setState(() {
+                                                          imageUploading =
+                                                              false;
+                                                        });
+                                                      }).catchError((onError) {
+                                                        customShowAlertDialog(
+                                                            context,
+                                                            messsage:
+                                                                "Error in uploading $onError");
+                                                      });
+                                                      setState(() {
+                                                        imageUploading = false;
+                                                      });
+                                                    }
+                                                    // print("We Found element ${value.docs.contains(element)}")
+                                                    return null;
+                                                  }).catchError((onError) {
+                                                    print(onError);
+                                                  });
+                                                });
+                                              });
+                                              // });
+                                            }).catchError((onError) {
+                                              print(onError);
+                                            });
+                                          }
                                         }
                                       },
+                                      // },
                                       child: Container(
                                         padding: EdgeInsets.all(12),
                                         decoration: BoxDecoration(
