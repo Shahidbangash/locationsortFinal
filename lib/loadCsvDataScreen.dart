@@ -17,41 +17,41 @@ bool loading = true;
 class LoadCsvDataScreen extends StatefulWidget {
   final String path;
 
-  List<dynamic> csvContent;
+  final List<dynamic> csvContent;
 
   LoadCsvDataScreen({Key key, this.path, this.csvContent});
 
   @override
-  State<LoadCsvDataScreen> createState() =>
-      _LoadCsvDataScreenState(csvContent: csvContent);
+  State<LoadCsvDataScreen> createState() => _LoadCsvDataScreenState();
 }
 
 class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
   var cityList = [];
   var resultFromGoogle = [];
 
-  final String path;
+  // final String path;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       print("WidgetsBinding");
+      // print(object)
       if (kIsWeb) {
         cityNames = [];
-        for (var i = 1; i < csvContent.length; i++) {
-          cityNames.add(csvContent[i][4].toString().trim() +
+        for (var i = 1; i < this.widget.csvContent.length; i++) {
+          cityNames.add(this.widget.csvContent[i][4].toString().trim() +
               " " +
-              csvContent[i][5].toString().trim());
+              this.widget.csvContent[i][5].toString().trim());
           // print("CityName is $cityNames");
         }
       }
     });
   }
 
-  List<dynamic> csvContent;
+  // List<dynamic> csvContent;
 
-  _LoadCsvDataScreenState({this.path, this.csvContent});
+  // _LoadCsvDataScreenState({this.path, this.csvContent});
 
   int current = 0;
   bool progress = false;
@@ -99,7 +99,9 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
                           });
 
                           if (kIsWeb) {
-                            for (var i = 2; i < csvContent.length - 1; i++) {
+                            for (var i = 2;
+                                i < this.widget.csvContent.length - 1;
+                                i++) {
                               // for (var i = 2; i < 6; i++) {
                               // print("I is ${i}");
                               // print("total cities are ${cityNames.length}");
@@ -175,7 +177,7 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
                       height: MediaQuery.of(context).size.height,
                       child: ListView.builder(
                           scrollDirection: Axis.vertical,
-                          itemCount: csvContent.length,
+                          itemCount: this.widget.csvContent.length,
                           itemBuilder: (context, i) {
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 5),
@@ -195,18 +197,30 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
                                         CrossAxisAlignment.center,
                                     children: <Widget>[
                                       Text(
-                                        csvContent[i][0].toString().trim(),
+                                        this
+                                            .widget
+                                            .csvContent[i][0]
+                                            .toString()
+                                            .trim(),
                                       ),
                                       SizedBox(
                                         width: 180,
                                         child: Center(
                                           child: Text(
-                                            csvContent[i][4].toString().trim(),
+                                            this
+                                                .widget
+                                                .csvContent[i][4]
+                                                .toString()
+                                                .trim(),
                                           ),
                                         ),
                                       ),
                                       Text(
-                                        csvContent[i][5].toString().trim(),
+                                        this
+                                            .widget
+                                            .csvContent[i][5]
+                                            .toString()
+                                            .trim(),
                                       ),
                                     ],
                                   ),
@@ -303,7 +317,7 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
                     borderRadius: const BorderRadius.all(Radius.circular(44))),
                 child: Text(
                   kIsWeb
-                      ? "${current} of ${csvContent.length} requests done"
+                      ? "${current} of ${this.widget.csvContent.length} requests done"
                       : "${current} of ${cityNames.length} requests done",
                   style: TextStyle(color: Colors.white),
                 ),

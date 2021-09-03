@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
       ),
       // home: MapPage(),
       home: MyHomePage(
-        title: 'Locatin Sorter',
+        title: 'Location Sorter',
         //   // title: title,
         //   // key: null,
       ),
@@ -70,6 +70,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (result != null) {
       selectedFile = result.files.first;
+      print(String.fromCharCodes(selectedFile.bytes));
+
       selectParseCSV();
       return;
     } else {
@@ -92,16 +94,9 @@ class _MyHomePageState extends State<MyHomePage> {
           currentRow.add(items.trim());
         });
 
-        setState(() {
-          finalCsvContent.add(currentRow);
-        });
+        finalCsvContent.add(currentRow);
       });
-
-      // MaterialPageRoute(
-      //   builder: (_) {
-      //     return LoadCsvDataScreen(csvContent: finalCsvContent);
-      //   },
-      // );
+      setState(() {});
 
 // check if CSV file has any content - content length > 0?
       if (csvFileContentList.length == 0 || csvFileContentList[1].length == 0) {
@@ -199,30 +194,29 @@ class _MyHomePageState extends State<MyHomePage> {
 
   loadCsvFromStorage() async {
     if (kIsWeb) {
-      await selectCSVFile();
+      await selectCSVFile().then((value) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => LoadCsvDataScreen(
+              csvContent: finalCsvContent,
+            ),
+          ),
+        );
+      });
 
       print("FInal csv length is ${finalCsvContent.length}");
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => LoadCsvDataScreen(
-            csvContent: finalCsvContent,
-          ),
-        ),
-      );
 
       // print("I am here");
     } else {
       // NOT running on the web! You can check for additional platforms here.
-
       try {
         FilePickerResult result = await FilePicker.platform.pickFiles(
           allowedExtensions: ['csv'],
           type: FileType.custom,
         );
 
-        String path = result.files.first.path as String;
+        String path = result.files.first.path;
         print("path is $path");
         Navigator.of(context).push(
           MaterialPageRoute(
