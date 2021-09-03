@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:locationsort/getLocation.dart';
 import 'package:locationsort/sortedPage.dart';
 
 var cityNames = [];
@@ -32,6 +33,9 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       print("WidgetsBinding");
+      getCurrentPosition().then((value) {
+        getCurrentPlaceName(value);
+      });
       // print(object)
       if (kIsWeb) {
         cityNames = [];
