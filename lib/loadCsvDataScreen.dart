@@ -1,15 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:locationsort/const.dart';
 import 'package:http/http.dart' as http;
 import 'package:locationsort/sortedPage.dart';
-
-// import 'global_data.dart';
 
 var cityNames = [];
 bool loading = true;
@@ -45,6 +41,7 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
               this.widget.csvContent[i][5].toString().trim());
           // print("CityName is $cityNames");
         }
+        setState(() {});
       }
     });
   }
@@ -99,9 +96,7 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
                           });
 
                           if (kIsWeb) {
-                            for (var i = 2;
-                                i < this.widget.csvContent.length - 1;
-                                i++) {
+                            for (var i = 2; i < cityNames.length - 1; i++) {
                               // for (var i = 2; i < 6; i++) {
                               // print("I is ${i}");
                               // print("total cities are ${cityNames.length}");
@@ -177,8 +172,13 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
                       height: MediaQuery.of(context).size.height,
                       child: ListView.builder(
                           scrollDirection: Axis.vertical,
-                          itemCount: this.widget.csvContent.length,
+                          itemCount: this.widget.csvContent.length - 1,
                           itemBuilder: (context, i) {
+                            // print("Item cpunt is $i");
+                            // print(
+                            // "And item is ${this.widget.csvContent[i][0]}");
+
+                            // children: this.widget.csvContent.map((item) {
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 5),
                               child: Card(
@@ -197,37 +197,41 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
                                         CrossAxisAlignment.center,
                                     children: <Widget>[
                                       Text(
-                                        this
-                                            .widget
-                                            .csvContent[i][0]
-                                            .toString()
-                                            .trim(),
-                                      ),
+                                          // item.toString()
+                                          this
+                                              .widget
+                                              .csvContent[i][0]
+                                              .toString()
+                                          // item[0].toString().trim(),
+                                          ),
                                       SizedBox(
                                         width: 180,
                                         child: Center(
                                           child: Text(
+                                            // item.toString()
                                             this
                                                 .widget
                                                 .csvContent[i][4]
-                                                .toString()
-                                                .trim(),
+                                                .toString(),
+                                            // item[4].toString().trim(),
                                           ),
                                         ),
                                       ),
                                       Text(
-                                        this
-                                            .widget
-                                            .csvContent[i][5]
-                                            .toString()
-                                            .trim(),
+                                        this.widget.csvContent[i][5].toString(),
+                                        // item.toString()
+                                        // item[5].toString().trim(),
                                       ),
                                     ],
                                   ),
                                 ),
                               ),
+                              // ),
                             );
-                          }),
+                          }
+                          // }).toList()
+                          // return ;
+                          ),
                     )
                   : FutureBuilder(
                       future: kIsWeb ? csvFiles : loadingCsvData(widget.path),
@@ -356,7 +360,7 @@ class _LoadCsvDataScreenState extends State<LoadCsvDataScreen> {
     FilePickerResult result = await FilePicker.platform.pickFiles();
     if (result != null) {
       PlatformFile file = result.files.first;
-      String path = file.path as String;
+      String path = file.path;
 
       final input = File(path).openRead();
       final fields = await input

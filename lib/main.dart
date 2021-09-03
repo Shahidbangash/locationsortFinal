@@ -70,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     if (result != null) {
       selectedFile = result.files.first;
-      print(String.fromCharCodes(selectedFile.bytes));
+      // print(String.fromCharCodes(selectedFile.bytes));
 
       selectParseCSV();
       return;
@@ -109,11 +109,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
       // return 'Error: ' + e.toString();
     }
-
-    // CsvModuleList.forEach((data) {
-    //   print(data.toList());
-    //   print(data.toJson());
-    // });
   }
 
   @override

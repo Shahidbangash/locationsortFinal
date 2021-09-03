@@ -59,6 +59,7 @@ dependencies:
   mime_type: ^1.0.0
   html: ^0.15.0
   firebase: ^9.0.1
+  google_geocoding: ^0.2.0
 
   # random_string: ^2.1.0
 
